@@ -55,8 +55,6 @@ export async function loginAction(formData: FormData) {
     };
   }
 
-  await setSessionTokenCookie(result.data.token);
-
   const verified = await verifySessionToken(result.data.token);
   if (!verified) {
     await setAuthDebugCookie(
@@ -70,7 +68,8 @@ export async function loginAction(formData: FormData) {
       },
     );
     return {
-      error: "Signed in on API, but this UI could not verify the session token. Check AUTH_SECRET matches the API.",
+      error:
+        "Signed in on API, but this UI could not verify the session token. Check AUTH_SECRET matches the API.",
       debug: {
         apiBase,
         role: result.data.user.role,
@@ -81,7 +80,7 @@ export async function loginAction(formData: FormData) {
   }
 
   const { user } = result.data;
-  const dest =
+  const redirectTo =
     user.role === "SUPER_ADMIN"
       ? "/super"
       : user.role === "STAFF"
@@ -91,14 +90,20 @@ export async function loginAction(formData: FormData) {
           })[0]?.href || "/app"
         : "/app";
 
-  authLog("loginAction", "ok, redirecting", {
+  authLog("loginAction", "ok — client will set cookie then navigate", {
     email: user.email,
     role: user.role,
-    dest,
+    redirectTo,
     apiBase,
   });
 
-  redirect(dest);
+  // Do not cookies().set() + redirect() here: Vercel drops Set-Cookie on the
+  // action 303 (see HAR). Client establishes the cookie via /api/auth/session.
+  return {
+    token: result.data.token,
+    redirectTo,
+    debug: { apiBase, role: user.role },
+  };
 }
 
 export async function logoutAction() {

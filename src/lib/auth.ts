@@ -6,7 +6,8 @@ import { authLog } from "@/lib/auth-debug";
 /** JWT session role — string union (no @prisma/client in web). */
 export type Role = "SUPER_ADMIN" | "CLIENT_ADMIN" | "STAFF";
 
-const COOKIE = "lab_session";
+export const SESSION_COOKIE = "lab_session";
+const COOKIE = SESSION_COOKIE;
 
 export type SessionUser = {
   id: string;
@@ -17,6 +18,16 @@ export type SessionUser = {
   /** When super admin is viewing a client */
   impersonatingClientId?: string | null;
 };
+
+export function sessionCookieOptions() {
+  return {
+    httpOnly: true,
+    sameSite: "lax" as const,
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7,
+  };
+}
 
 function secret() {
   const value = process.env.AUTH_SECRET;
@@ -49,13 +60,7 @@ export async function setSessionCookie(user: SessionUser) {
 /** Store an API-issued JWT as the session cookie (preferred). */
 export async function setSessionTokenCookie(token: string) {
   const jar = await cookies();
-  jar.set(COOKIE, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 7,
-  });
+  jar.set(COOKIE, token, sessionCookieOptions());
 }
 
 export async function clearSessionCookie() {

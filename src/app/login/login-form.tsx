@@ -3,6 +3,7 @@
 import { useEffect, useId, useState } from "react";
 import { flushSync } from "react-dom";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { loginAction } from "@/app/actions/auth";
 import { Logo } from "@/components/logo";
 import { useActionPending } from "@/components/action-pending";
@@ -15,17 +16,23 @@ export function LoginForm({
   initialDebug?: AuthDebugPayload | null;
 }) {
   useComponentLog("LoginForm");
+  const router = useRouter();
   const { pending, setPending } = useActionPending();
   const [error, setError] = useState<string | null>(null);
   const errorId = useId();
 
   useEffect(() => {
     if (!initialDebug) return;
-    logUiEvent("LoginForm", initialDebug.message, {
-      step: initialDebug.step,
-      at: initialDebug.at,
-      ...initialDebug.detail,
-    }, "warn");
+    logUiEvent(
+      "LoginForm",
+      initialDebug.message,
+      {
+        step: initialDebug.step,
+        at: initialDebug.at,
+        ...initialDebug.detail,
+      },
+      "warn",
+    );
   }, [initialDebug]);
 
   function onFormSubmit() {
@@ -53,21 +60,44 @@ export function LoginForm({
         setPending(false);
         return;
       }
-      logUiEvent("LoginForm", "loginAction returned without redirect (unexpected)", undefined, "warn");
-      setPending(false);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      const isRedirect =
-        typeof err === "object" &&
-        err !== null &&
-        "digest" in err &&
-        String((err as { digest?: unknown }).digest).startsWith("NEXT_REDIRECT");
 
-      if (isRedirect) {
-        logUiEvent("LoginForm", "redirect thrown (expected on success)");
+      if (!result?.token || !result.redirectTo) {
+        logUiEvent("LoginForm", "loginAction missing token/redirectTo", { result }, "error");
+        setError("Sign in failed (no session token)");
+        setPending(false);
         return;
       }
 
+      logUiEvent("LoginForm", "establishing session cookie", {
+        redirectTo: result.redirectTo,
+        debug: result.debug,
+      });
+
+      const sessionRes = await fetch("/api/auth/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: result.token }),
+      });
+      const sessionJson = (await sessionRes.json().catch(() => ({}))) as {
+        ok?: boolean;
+        error?: string;
+      };
+
+      if (!sessionRes.ok || sessionJson.ok === false) {
+        const message = sessionJson.error || `Could not set session (${sessionRes.status})`;
+        logUiEvent("LoginForm", "session cookie failed", { message }, "error");
+        setError(message);
+        setPending(false);
+        return;
+      }
+
+      logUiEvent("LoginForm", "session cookie set, navigating", {
+        redirectTo: result.redirectTo,
+      });
+      router.replace(result.redirectTo);
+      router.refresh();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
       logUiEvent("LoginForm", "loginAction threw", { message }, "error");
       setError(message || "Sign in failed");
       setPending(false);
