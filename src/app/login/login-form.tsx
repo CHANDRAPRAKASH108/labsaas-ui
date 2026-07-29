@@ -88,7 +88,7 @@ export function LoginForm() {
               type="email"
               required
               autoComplete="username"
-              defaultValue="super@labsaas.local"
+              placeholder="you@lab.com"
               className="min-h-11 w-full rounded-lg border border-emerald-800/20 bg-[#f7fcf9] px-3 py-2 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/25"
             />
           </div>
@@ -102,7 +102,7 @@ export function LoginForm() {
               type="password"
               required
               autoComplete="current-password"
-              defaultValue="admin123"
+              placeholder="Password"
               className="min-h-11 w-full rounded-lg border border-emerald-800/20 bg-[#f7fcf9] px-3 py-2 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/25"
             />
           </div>
