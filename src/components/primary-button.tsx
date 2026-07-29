@@ -2,7 +2,6 @@
 
 import { useFormStatus } from "react-dom";
 import { useReportFormPending } from "@/components/action-pending";
-import { useComponentLog } from "@/hooks/use-component-log";
 
 function Spinner({ className = "size-4" }: { className?: string }) {
   return <span className={`lab-spinner lab-spinner--on-dark ${className}`} aria-hidden="true" />;
@@ -17,7 +16,6 @@ export function PrimaryButton({
   type?: "submit" | "button";
   disabled?: boolean;
 }) {
-  useComponentLog("PrimaryButton");
   const { pending } = useFormStatus();
   useReportFormPending(pending);
   const busy = pending || Boolean(disabled);

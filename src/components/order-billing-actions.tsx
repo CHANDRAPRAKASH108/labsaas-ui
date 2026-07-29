@@ -10,7 +10,6 @@ import {
 import { formatMoney } from "@/lib/billing";
 import { useActionPending } from "@/components/action-pending";
 import { DocumentPdfActions } from "@/components/document-pdf-actions";
-import { useComponentLog } from "@/hooks/use-component-log";
 
 const PAYMENT_METHODS = [
   { value: "CASH", label: "Cash" },
@@ -42,7 +41,6 @@ export function OrderBillingActions({
   patientPhone: string | null;
   channels: Channels;
 }) {
-  useComponentLog("OrderBillingActions");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const { setPending: setGlobalPending } = useActionPending();

@@ -6,7 +6,6 @@ import { AppSidebar, readSidebarCollapsed } from "@/components/app-sidebar";
 import { FullscreenToggle } from "@/components/fullscreen-toggle";
 import { ProfileMenu } from "@/components/profile-menu";
 import type { SidebarSection } from "@/lib/sidebar-nav";
-import { useComponentLog } from "@/hooks/use-component-log";
 
 function titleForPath(pathname: string) {
   if (pathname === "/app") return "Dashboard";
@@ -51,7 +50,6 @@ export function AppShell({
   clientName?: string | null;
   pathname: string;
 }) {
-  useComponentLog("AppShell");
   const impersonating = Boolean(session.impersonatingClientId);
   const homeHref =
     session.role === "SUPER_ADMIN" && !impersonating ? "/super" : "/app";

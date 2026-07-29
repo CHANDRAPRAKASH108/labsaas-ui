@@ -3,7 +3,6 @@
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { useActionPending } from "@/components/action-pending";
 import { sendInvoiceAction, sendReportPdfAction } from "@/app/actions/client";
-import { useComponentLog } from "@/hooks/use-component-log";
 
 type Kind = "invoice" | "report";
 type ModalMode = "preview" | "email" | null;
@@ -23,7 +22,6 @@ export function DocumentPdfActions({
   /** Outbound SMTP is off by default — keep Print / Download only. */
   enableEmail?: boolean;
 }) {
-  useComponentLog("DocumentPdfActions");
   const [mode, setMode] = useState<ModalMode>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

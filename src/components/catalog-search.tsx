@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { Field, PrimaryButton } from "@/components/ui";
-import { useComponentLog } from "@/hooks/use-component-log";
 
 type Category = { id: string; name: string };
 
@@ -19,7 +18,6 @@ export function CatalogSearch({
   /** Keep the lab tests list search when filtering the catalog. */
   preserveQ?: string;
 }) {
-  useComponentLog("CatalogSearch");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 

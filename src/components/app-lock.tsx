@@ -9,7 +9,6 @@ import {
   useState,
 } from "react";
 import { logoutAction, verifyPasswordAction } from "@/app/actions/auth";
-import { useComponentLog } from "@/hooks/use-component-log";
 
 const STORAGE_KEY = "labsaas_app_locked";
 
@@ -32,7 +31,6 @@ export function useAppLock() {
 }
 
 export function AppLockProvider({ children }: { children: React.ReactNode }) {
-  useComponentLog("AppLockProvider");
   const [locked, setLocked] = useState(false);
   const [ready, setReady] = useState(false);
 

@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { updateLabUserScreensAction } from "@/app/actions/client";
 import { CONFIGURABLE_SCREENS, DEFAULT_STAFF_SCREENS } from "@/lib/nav";
-import { useComponentLog } from "@/hooks/use-component-log";
 
 export function EditUserScreensForm({
   userId,
@@ -14,7 +13,6 @@ export function EditUserScreensForm({
   role: string;
   allowedScreens: string[];
 }) {
-  useComponentLog("EditUserScreensForm");
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();

@@ -4,12 +4,10 @@ import {
   sessionCookieOptions,
   verifySessionToken,
 } from "@/lib/auth";
-import { uiLog } from "@/lib/ui-log";
 
 /**
  * Sets the httpOnly session cookie via a normal Route Handler response.
- * Server-action `cookies().set()` + `redirect()` was dropping Set-Cookie
- * on Vercel (HAR showed 303 to /super with no Set-Cookie).
+ * Server-action cookies().set() + redirect() can drop Set-Cookie on Vercel.
  */
 export async function POST(request: Request) {
   let body: { token?: string };
@@ -26,7 +24,6 @@ export async function POST(request: Request) {
 
   const session = await verifySessionToken(token);
   if (!session) {
-    uiLog("api/auth/session", "reject token (verify failed)", undefined, "error");
     return NextResponse.json(
       { ok: false, error: "Invalid session token (check AUTH_SECRET matches API)" },
       { status: 401 },
@@ -38,7 +35,6 @@ export async function POST(request: Request) {
     data: { role: session.role, email: session.email },
   });
   res.cookies.set(SESSION_COOKIE, token, sessionCookieOptions());
-  uiLog("api/auth/session", "cookie set", { role: session.role, email: session.email });
   return res;
 }
 
@@ -48,6 +44,5 @@ export async function DELETE() {
     ...sessionCookieOptions(),
     maxAge: 0,
   });
-  uiLog("api/auth/session", "cookie cleared");
   return res;
 }

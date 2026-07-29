@@ -3,7 +3,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { requestFeatureEnableAction } from "@/app/actions/features";
 import { PrimaryButton } from "@/components/ui";
-import { useComponentLog } from "@/hooks/use-component-log";
 
 const FEATURE_OPTIONS = ["Email", "SMS", "WhatsApp"] as const;
 
@@ -12,7 +11,6 @@ type Props = {
 };
 
 export function RequestFeatureEnable({ disabledFeatures }: Props) {
-  useComponentLog("RequestFeatureEnable");
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);

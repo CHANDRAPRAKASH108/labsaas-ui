@@ -4,10 +4,8 @@ import { useState, useTransition } from "react";
 import { createLabUserAction } from "@/app/actions/client";
 import { Field, PrimaryButton } from "@/components/ui";
 import { CONFIGURABLE_SCREENS, DEFAULT_STAFF_SCREENS } from "@/lib/nav";
-import { useComponentLog } from "@/hooks/use-component-log";
 
 export function CreateLabUserForm() {
-  useComponentLog("CreateLabUserForm");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [role, setRole] = useState<"STAFF" | "CLIENT_ADMIN">("STAFF");

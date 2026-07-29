@@ -2,10 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useComponentLog } from "@/hooks/use-component-log";
 
 export function AppNav({ items }: { items: { href: string; label: string }[] }) {
-  useComponentLog("AppNav");
   const pathname = usePathname();
 
   return (

@@ -7,7 +7,6 @@ import { createOrderAction } from "@/app/actions/client";
 import { Field, PrimaryButton } from "@/components/ui";
 import { formatMoney } from "@/lib/billing";
 import { useActionPending } from "@/components/action-pending";
-import { useComponentLog } from "@/hooks/use-component-log";
 
 type PatientOption = { id: string; name: string; phone: string | null };
 type TestOption = { id: string; name: string; code: string; price: number };
@@ -21,7 +20,6 @@ export function NewOrderForm({
   tests: TestOption[];
   initialPatientId?: string;
 }) {
-  useComponentLog("NewOrderForm");
   const router = useRouter();
   const { pending, setPending } = useActionPending();
   const hasInitialPatient =

@@ -1,77 +1,40 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import { flushSync } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { loginAction } from "@/app/actions/auth";
 import { Logo } from "@/components/logo";
 import { useActionPending } from "@/components/action-pending";
-import { useComponentLog, logUiEvent } from "@/hooks/use-component-log";
-import type { AuthDebugPayload } from "@/lib/auth-debug";
 
-export function LoginForm({
-  initialDebug = null,
-}: {
-  initialDebug?: AuthDebugPayload | null;
-}) {
-  useComponentLog("LoginForm");
+export function LoginForm() {
   const router = useRouter();
   const { pending, setPending } = useActionPending();
   const [error, setError] = useState<string | null>(null);
   const errorId = useId();
-
-  useEffect(() => {
-    if (!initialDebug) return;
-    logUiEvent(
-      "LoginForm",
-      initialDebug.message,
-      {
-        step: initialDebug.step,
-        at: initialDebug.at,
-        ...initialDebug.detail,
-      },
-      "warn",
-    );
-  }, [initialDebug]);
 
   function onFormSubmit() {
     flushSync(() => {
       setError(null);
       setPending(true);
     });
-    logUiEvent("LoginForm", "form submit");
   }
 
   async function onAction(formData: FormData) {
-    const email = String(formData.get("email") || "").trim().toLowerCase();
-    logUiEvent("LoginForm", "calling loginAction", { email });
-
     try {
       const result = await loginAction(formData);
       if (result?.error) {
-        logUiEvent(
-          "LoginForm",
-          "loginAction returned error",
-          { error: result.error, debug: result.debug },
-          "error",
-        );
         setError(result.error);
         setPending(false);
         return;
       }
 
       if (!result?.token || !result.redirectTo) {
-        logUiEvent("LoginForm", "loginAction missing token/redirectTo", { result }, "error");
         setError("Sign in failed (no session token)");
         setPending(false);
         return;
       }
-
-      logUiEvent("LoginForm", "establishing session cookie", {
-        redirectTo: result.redirectTo,
-        debug: result.debug,
-      });
 
       const sessionRes = await fetch("/api/auth/session", {
         method: "POST",
@@ -84,21 +47,15 @@ export function LoginForm({
       };
 
       if (!sessionRes.ok || sessionJson.ok === false) {
-        const message = sessionJson.error || `Could not set session (${sessionRes.status})`;
-        logUiEvent("LoginForm", "session cookie failed", { message }, "error");
-        setError(message);
+        setError(sessionJson.error || `Could not set session (${sessionRes.status})`);
         setPending(false);
         return;
       }
 
-      logUiEvent("LoginForm", "session cookie set, navigating", {
-        redirectTo: result.redirectTo,
-      });
       router.replace(result.redirectTo);
       router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      logUiEvent("LoginForm", "loginAction threw", { message }, "error");
       setError(message || "Sign in failed");
       setPending(false);
     }

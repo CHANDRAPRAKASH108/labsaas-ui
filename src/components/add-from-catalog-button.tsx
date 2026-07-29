@@ -3,10 +3,8 @@
 import { useEffect, useTransition } from "react";
 import { addFromCatalogAction } from "@/app/actions/tests";
 import { useActionPending } from "@/components/action-pending";
-import { useComponentLog } from "@/hooks/use-component-log";
 
 export function AddFromCatalogButton({ masterTestId }: { masterTestId: string }) {
-  useComponentLog("AddFromCatalogButton");
   const [pending, startTransition] = useTransition();
   const { setPending } = useActionPending();
 

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { useComponentLog } from "@/hooks/use-component-log";
 
 export function ListSearch({
   action,
@@ -16,7 +15,6 @@ export function ListSearch({
   placeholder: string;
   hiddenFields?: Record<string, string>;
 }) {
-  useComponentLog("ListSearch");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 

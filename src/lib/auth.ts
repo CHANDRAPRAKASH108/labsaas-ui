@@ -1,7 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { cache } from "react";
-import { authLog } from "@/lib/auth-debug";
 
 /** JWT session role — string union (no @prisma/client in web). */
 export type Role = "SUPER_ADMIN" | "CLIENT_ADMIN" | "STAFF";
@@ -72,31 +71,8 @@ export async function clearSessionCookie() {
 export const getSession = cache(async (): Promise<SessionUser | null> => {
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
-  if (!token) {
-    authLog("getSession", "no lab_session cookie");
-    return null;
-  }
-
-  const hasSecret = Boolean(process.env.AUTH_SECRET);
-  try {
-    const session = await verifySessionToken(token);
-    if (!session) {
-      // Do not set cookies here — getSession runs during RSC render.
-      authLog("getSession", "JWT verify failed (often AUTH_SECRET mismatch with API)", {
-        hasAuthSecret: hasSecret,
-        tokenLength: token.length,
-      });
-      return null;
-    }
-    authLog("getSession", "ok", { role: session.role, email: session.email });
-    return session;
-  } catch (err) {
-    authLog("getSession", "session read threw", {
-      hasAuthSecret: hasSecret,
-      error: err instanceof Error ? err.message : String(err),
-    });
-    return null;
-  }
+  if (!token) return null;
+  return verifySessionToken(token);
 });
 
 export function effectiveClientId(session: SessionUser): string | null {
