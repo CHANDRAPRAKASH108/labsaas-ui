@@ -1,0 +1,241 @@
+@import "tailwindcss";
+
+:root {
+  --background: #e4f2ec;
+  --foreground: #0c241c;
+  --surface: #f4fbf7;
+  --surface-muted: #d7eee4;
+  --border: #b7d8c8;
+  --border-strong: #5f9a82;
+  --brand: #0d7a5f;
+  --brand-strong: #0a5c48;
+  --brand-soft: #c6f0df;
+  --accent: #0f766e;
+  --danger: #b91c1c;
+  --warning: #b45309;
+  --success: #047857;
+  --focus: #0f766e;
+  --shadow: 0 1px 2px rgb(12 36 28 / 0.07), 0 10px 28px rgb(13 122 95 / 0.08);
+  --radius: 0.75rem;
+  --font-sans: var(--font-sans-app);
+  --font-display: var(--font-display);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-sans-app);
+  --font-display: var(--font-display);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(ellipse 90% 55% at 0% -5%, rgb(110 231 183 / 0.45), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 100% 0%, rgb(167 243 208 / 0.4), transparent 50%),
+    radial-gradient(ellipse 50% 40% at 50% 100%, rgb(204 251 241 / 0.35), transparent 55%),
+    var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), "Segoe UI", sans-serif;
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -100px;
+  z-index: 100;
+  border-radius: 0.5rem;
+  background: var(--brand-strong);
+  color: white;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lab-table caption {
+  caption-side: top;
+  text-align: left;
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  color: #3d6b58;
+}
+
+.lab-table th,
+.lab-table td {
+  text-align: left;
+  padding: 0.85rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9375rem;
+  vertical-align: top;
+}
+
+.lab-table th {
+  color: #1f4d3c;
+  font-weight: 650;
+  background: var(--surface-muted);
+}
+
+.lab-table tbody tr:hover {
+  background: rgb(13 122 95 / 0.07);
+}
+
+.lab-table tbody tr:focus-within {
+  background: rgb(15 118 110 / 0.1);
+}
+
+@keyframes navprogress {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(420%);
+  }
+}
+
+.nav-progress-bar {
+  animation: navprogress 0.9s ease-in-out infinite;
+}
+
+@keyframes lab-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes lab-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.lab-spinner {
+  display: inline-block;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  border: 3px solid rgb(167 243 208);
+  border-top-color: rgb(4 120 87);
+  animation: lab-spin 0.7s linear infinite;
+}
+
+.lab-spinner--on-dark {
+  border-color: rgb(255 255 255 / 0.35);
+  border-top-color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *:not(.lab-spinner):not(.nav-progress-bar),
+  *:not(.lab-spinner):not(.nav-progress-bar)::before,
+  *:not(.lab-spinner):not(.nav-progress-bar)::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .lab-spinner {
+    animation: lab-pulse 1s ease-in-out infinite;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --border: #3d6b58;
+    --foreground: #000;
+    --background: #e8f5ef;
+  }
+
+  :focus-visible {
+    outline-width: 4px;
+  }
+}
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  body * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  .no-print,
+  .skip-link,
+  header,
+  nav,
+  [role="status"] {
+    display: none !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .app-content {
+    padding-left: 0 !important;
+  }
+
+  .print-document {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .print-document img {
+    display: block !important;
+    max-height: 64px !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+}
+
