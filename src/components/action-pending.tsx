@@ -10,6 +10,8 @@ import {
   useState,
 } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useComponentLog } from "@/hooks/use-component-log";
+import { uiLog } from "@/lib/ui-log";
 
 type ActionPendingContextValue = {
   pending: boolean;
@@ -74,6 +76,7 @@ function ActionPendingInner({ children }: { children: React.ReactNode }) {
   const pending = manualPending || formPendingCount > 0;
 
   const setPending = useCallback((value: boolean) => {
+    uiLog("ActionPending", value ? "manual pending on" : "manual pending off");
     setManualPending(value);
   }, []);
 
@@ -140,5 +143,6 @@ export function useReportFormPending(formPending: boolean) {
 }
 
 export function ActionPendingProvider({ children }: { children: React.ReactNode }) {
+  useComponentLog("ActionPendingProvider");
   return <ActionPendingInner>{children}</ActionPendingInner>;
 }

@@ -9,6 +9,7 @@ import {
 } from "@/app/actions/client";
 import { Card, TextLink } from "@/components/ui";
 import { formatMoney } from "@/lib/billing";
+import { useComponentLog } from "@/hooks/use-component-log";
 
 type Patient = {
   id: string;
@@ -101,6 +102,7 @@ export function OrderDetailEditor({
   availableTests: AvailableTest[];
   locked: boolean;
 }) {
+  useComponentLog("OrderDetailEditor");
   const [editPatient, setEditPatient] = useState(false);
   const [editOrder, setEditOrder] = useState(false);
   const [editTests, setEditTests] = useState(false);

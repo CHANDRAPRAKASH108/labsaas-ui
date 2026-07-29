@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { Card } from "@/components/ui";
+import { useComponentLog } from "@/hooks/use-component-log";
 
 export function IncomeDateFilter({
   dateFrom,
@@ -16,6 +17,7 @@ export function IncomeDateFilter({
   presets: { label: string; href: string }[];
   maxMonths: number;
 }) {
+  useComponentLog("IncomeDateFilter");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 

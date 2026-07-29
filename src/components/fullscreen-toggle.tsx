@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useComponentLog } from "@/hooks/use-component-log";
 
 function isFullscreenActive() {
   return Boolean(document.fullscreenElement);
 }
 
 export function FullscreenToggle() {
+  useComponentLog("FullscreenToggle");
   const [active, setActive] = useState(false);
 
   useEffect(() => {

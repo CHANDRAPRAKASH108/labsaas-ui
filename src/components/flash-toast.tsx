@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useComponentLog } from "@/hooks/use-component-log";
 
 const DISPLAY_MS = 4000;
 
@@ -11,6 +12,7 @@ export function FlashToastClient({
   initialMessage: string | null;
   initialTone?: "success" | "error";
 }) {
+  useComponentLog("FlashToastClient");
   const [toast, setToast] = useState<{ message: string; tone: "success" | "error" } | null>(
     initialMessage ? { message: initialMessage, tone: initialTone } : null,
   );

@@ -6,6 +6,7 @@ import {
   updateMessagingConfigAction,
 } from "@/app/actions/super";
 import { Field, PrimaryButton } from "@/components/ui";
+import { useComponentLog } from "@/hooks/use-component-log";
 
 export type MessagingConfig = {
   emailEnabled: boolean;
@@ -37,6 +38,7 @@ export function MessagingConfigForm({
   clientId,
   variant = clientId ? "client" : "platform",
 }: Props) {
+  useComponentLog("MessagingConfigForm");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [mode, setMode] = useState(config.whatsappMode || "CLICK_TO_CHAT");

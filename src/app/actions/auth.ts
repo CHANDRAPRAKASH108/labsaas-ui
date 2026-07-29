@@ -5,13 +5,23 @@ import { apiFetch } from "@/lib/api-client";
 import {
   clearSessionCookie,
   setSessionTokenCookie,
+  verifySessionToken,
   type Role,
 } from "@/lib/auth";
+import { authLog, setAuthDebugCookie } from "@/lib/auth-debug";
+import { apiUrl } from "@/lib/api-url";
 import { navForSession } from "@/lib/nav";
 
 export async function loginAction(formData: FormData) {
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
+  const apiBase = apiUrl("/").replace(/\/$/, "");
+
+  authLog("loginAction", "start", {
+    email,
+    apiBase,
+    hasAuthSecret: Boolean(process.env.AUTH_SECRET),
+  });
 
   const result = await apiFetch<{
     token: string;
@@ -29,25 +39,66 @@ export async function loginAction(formData: FormData) {
   });
 
   if (!result.ok) {
-    return { error: result.error };
+    await setAuthDebugCookie("loginAction", "API login failed", {
+      email,
+      apiBase,
+      status: result.status,
+      error: result.error,
+    });
+    return {
+      error: result.error,
+      debug: {
+        apiBase,
+        status: result.status,
+        hasAuthSecret: Boolean(process.env.AUTH_SECRET),
+      },
+    };
   }
 
   await setSessionTokenCookie(result.data.token);
 
+  const verified = await verifySessionToken(result.data.token);
+  if (!verified) {
+    await setAuthDebugCookie(
+      "loginAction",
+      "API returned token but web JWT verify failed — AUTH_SECRET likely differs from API",
+      {
+        apiBase,
+        role: result.data.user.role,
+        tokenLength: result.data.token.length,
+        hasAuthSecret: Boolean(process.env.AUTH_SECRET),
+      },
+    );
+    return {
+      error: "Signed in on API, but this UI could not verify the session token. Check AUTH_SECRET matches the API.",
+      debug: {
+        apiBase,
+        role: result.data.user.role,
+        hasAuthSecret: Boolean(process.env.AUTH_SECRET),
+        verifyFailed: true,
+      },
+    };
+  }
+
   const { user } = result.data;
-  if (user.role === "SUPER_ADMIN") {
-    redirect("/super");
-  }
+  const dest =
+    user.role === "SUPER_ADMIN"
+      ? "/super"
+      : user.role === "STAFF"
+        ? navForSession({
+            role: user.role,
+            allowedScreens: user.allowedScreens,
+          })[0]?.href || "/app"
+        : "/app";
 
-  if (user.role === "STAFF") {
-    const nav = navForSession({
-      role: user.role,
-      allowedScreens: user.allowedScreens,
-    });
-    redirect(nav[0]?.href || "/app");
-  }
+  authLog("loginAction", "ok, redirecting", {
+    email: user.email,
+    role: user.role,
+    dest,
+    apiBase,
+  });
 
-  redirect("/app");
+  redirect(dest);
 }
 
 export async function logoutAction() {

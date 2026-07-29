@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useComponentLog } from "@/hooks/use-component-log";
 
 function NavProgressInner() {
   const pathname = usePathname();
@@ -71,6 +72,7 @@ function NavProgressInner() {
 }
 
 export function NavProgress() {
+  useComponentLog("NavProgress");
   return (
     <Suspense fallback={null}>
       <NavProgressInner />

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import type { SessionUser } from "@/lib/auth";
 import { AppShell } from "@/components/app-shell";
 import type { SidebarSection } from "@/lib/sidebar-nav";
+import { useComponentLog } from "@/hooks/use-component-log";
 
 export function AppChrome({
   session,
@@ -17,6 +18,7 @@ export function AppChrome({
   sections: SidebarSection[];
   children: ReactNode;
 }) {
+  useComponentLog("AppChrome");
   const pathname = usePathname();
 
   if (pathname.includes("/print")) {

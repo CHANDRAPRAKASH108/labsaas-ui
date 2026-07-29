@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { updateLabUserPasswordAction } from "@/app/actions/client";
+import { useComponentLog } from "@/hooks/use-component-log";
 
 export function ChangeUserPasswordForm({
   userId,
@@ -10,6 +11,7 @@ export function ChangeUserPasswordForm({
   userId: string;
   userName: string;
 }) {
+  useComponentLog("ChangeUserPasswordForm");
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();

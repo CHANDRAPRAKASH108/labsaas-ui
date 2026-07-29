@@ -13,6 +13,7 @@ import {
   type SidebarIcon,
   type SidebarSection,
 } from "@/lib/sidebar-nav";
+import { useComponentLog } from "@/hooks/use-component-log";
 
 const COLLAPSED_KEY = "labsaas.sidebar.collapsed";
 const SECTIONS_KEY = "labsaas.sidebar.sections";
@@ -42,6 +43,7 @@ export function AppSidebar({
   mobileOpen: boolean;
   onMobileClose: () => void;
 }) {
+  useComponentLog("AppSidebar");
   const pathname = usePathname();
   const allHrefs = useMemo(() => collectHrefs(sections), [sections]);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});

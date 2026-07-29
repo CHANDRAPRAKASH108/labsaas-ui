@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { logoutAction, stopImpersonationAction } from "@/app/actions/auth";
 import { useAppLock } from "@/components/app-lock";
+import { useComponentLog } from "@/hooks/use-component-log";
 
 function initialsFromName(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -20,6 +21,7 @@ export function ProfileMenu({
   email?: string | null;
   impersonating?: boolean;
 }) {
+  useComponentLog("ProfileMenu");
   const [open, setOpen] = useState(false);
   const { lockApp } = useAppLock();
   const rootRef = useRef<HTMLDivElement>(null);

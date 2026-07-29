@@ -4,8 +4,10 @@ import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClientAction } from "@/app/actions/super";
 import { Field, PrimaryButton } from "@/components/ui";
+import { useComponentLog } from "@/hooks/use-component-log";
 
 export function AddClientForm() {
+  useComponentLog("AddClientForm");
   const router = useRouter();
   const errorId = useId();
   const [error, setError] = useState<string | null>(null);
