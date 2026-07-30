@@ -40,6 +40,7 @@ export async function updateBrandingAction(formData: FormData): Promise<void> {
 }
 
 export async function createPatientAction(formData: FormData): Promise<void> {
+  const ageRaw = String(formData.get("age") || "").trim();
   const result = await apiFetch("/api/v1/patients", {
     method: "POST",
     body: {
@@ -47,8 +48,8 @@ export async function createPatientAction(formData: FormData): Promise<void> {
       phone: String(formData.get("phone") || "").trim(),
       address: String(formData.get("address") || "").trim(),
       email: String(formData.get("email") || "") || null,
-      age: formData.get("age") ? Number(formData.get("age")) : null,
-      gender: String(formData.get("gender") || "") || null,
+      age: ageRaw ? Number(ageRaw) : undefined,
+      gender: String(formData.get("gender") || "").trim() || undefined,
     },
   });
   if (!result.ok) {
@@ -63,6 +64,7 @@ export async function createPatientAction(formData: FormData): Promise<void> {
 export async function updatePatientAction(formData: FormData): Promise<void> {
   const patientId = String(formData.get("patientId") || "");
   const orderId = String(formData.get("orderId") || "");
+  const ageRaw = String(formData.get("age") || "").trim();
   const result = await apiFetch(`/api/v1/patients/${patientId}`, {
     method: "PATCH",
     body: {
@@ -70,11 +72,14 @@ export async function updatePatientAction(formData: FormData): Promise<void> {
       phone: String(formData.get("phone") || "").trim(),
       address: String(formData.get("address") || "").trim(),
       email: String(formData.get("email") || "").trim() || null,
-      age: formData.get("age") ? Number(formData.get("age")) : null,
-      gender: String(formData.get("gender") || "").trim() || null,
+      age: ageRaw ? Number(ageRaw) : undefined,
+      gender: String(formData.get("gender") || "").trim() || undefined,
     },
   });
-  if (!result.ok) throw new Error(result.error);
+  if (!result.ok) {
+    await setFlash(result.error, "error");
+    return;
+  }
   revalidatePath("/app/patients");
   revalidatePath(`/app/patients/${patientId}`);
   if (orderId) revalidatePath(`/app/orders/${orderId}`);
@@ -83,6 +88,7 @@ export async function updatePatientAction(formData: FormData): Promise<void> {
 }
 
 export async function createOrderAction(formData: FormData) {
+  const ageRaw = String(formData.get("patientAge") || "").trim();
   const result = await apiFetch<{ orderId: string }>("/api/v1/orders", {
     method: "POST",
     body: {
@@ -91,6 +97,8 @@ export async function createOrderAction(formData: FormData) {
       patientName: String(formData.get("patientName") || "").trim() || undefined,
       patientPhone: String(formData.get("patientPhone") || "").trim() || undefined,
       patientAddress: String(formData.get("patientAddress") || "").trim() || undefined,
+      patientAge: ageRaw ? Number(ageRaw) : undefined,
+      patientGender: String(formData.get("patientGender") || "").trim() || undefined,
       testIds: formData.getAll("testIds").map(String),
       notes: String(formData.get("notes") || "") || null,
     },

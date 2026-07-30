@@ -128,9 +128,26 @@ export function NewOrderForm({
                 autoComplete="street-address"
               />
             </div>
-            <p className="sm:col-span-2 text-xs text-emerald-900/60">
-              Only name, phone, and address are required to place an order.
-            </p>
+            <Field label="Age" name="patientAge" type="number" required />
+            <div className="text-sm">
+              <label htmlFor="patientGender" className="mb-1.5 block font-medium text-emerald-950/80">
+                Sex <span className="text-rose-700" aria-hidden="true">*</span>
+              </label>
+              <select
+                id="patientGender"
+                name="patientGender"
+                required
+                defaultValue=""
+                className="min-h-11 w-full rounded-lg border border-emerald-800/20 bg-[#f7fcf9] px-3 py-2 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/25"
+              >
+                <option value="" disabled>
+                  Select
+                </option>
+                <option value="Female">Female</option>
+                <option value="Male">Male</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
           </div>
         ) : (
           <div className="space-y-2 text-sm">

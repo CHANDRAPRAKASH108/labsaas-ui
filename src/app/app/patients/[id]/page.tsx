@@ -46,7 +46,7 @@ export default async function PatientDetailPage({
   const result = await apiFetch<{ patient: PatientDetail }>(`/api/v1/patients/${id}`);
   if (!result.ok) {
     if (result.status === 404) notFound();
-    return <EmptyState>Could not load patient: {result.error}</EmptyState>;
+    return <EmptyState>{result.error}</EmptyState>;
   }
 
   const patient = result.data.patient;
@@ -106,19 +106,23 @@ export default async function PatientDetailPage({
                 label="Age"
                 name="age"
                 type="number"
+                required
                 defaultValue={patient.age}
               />
               <div className="text-sm">
                 <label htmlFor="gender" className="mb-1.5 block font-medium text-emerald-950/80">
-                  Gender
+                  Sex <span className="text-rose-700" aria-hidden="true">*</span>
                 </label>
                 <select
                   id="gender"
                   name="gender"
+                  required
                   defaultValue={patient.gender ?? ""}
                   className="min-h-10 w-full rounded-lg border border-emerald-800/20 bg-[#f7fcf9] px-3 py-2 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/25"
                 >
-                  <option value="">—</option>
+                  <option value="" disabled>
+                    Select
+                  </option>
                   <option value="Female">Female</option>
                   <option value="Male">Male</option>
                   <option value="Other">Other</option>

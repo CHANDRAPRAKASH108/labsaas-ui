@@ -25,6 +25,8 @@ type OrderDetail = {
     phone: string | null;
     address: string | null;
     email: string | null;
+    age: number | null;
+    gender: string | null;
   };
   invoice: { id: string; invoiceNumber: string } | null;
   report: { id: string; status: string } | null;
@@ -124,6 +126,8 @@ export default async function OrderDetailPage({
           name: order.patient.name,
           phone: order.patient.phone,
           address: order.patient.address,
+          age: order.patient.age,
+          gender: order.patient.gender,
         }}
         status={order.status}
         notes={order.notes}

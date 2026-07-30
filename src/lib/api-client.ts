@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { apiUrl } from "@/lib/api-url";
+import { toUserError } from "@/lib/user-error";
 
 const COOKIE = "lab_session";
 
@@ -52,11 +53,10 @@ export async function apiFetch<T>(
       body,
       cache: "no-store",
     });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+  } catch {
     return {
       ok: false,
-      error: `Cannot reach API at ${url.origin} (${message})`,
+      error: toUserError(0),
       status: 0,
     };
   }
@@ -65,13 +65,21 @@ export async function apiFetch<T>(
   try {
     json = await res.json();
   } catch {
-    return { ok: false, error: `Invalid API response (${res.status})`, status: res.status };
+    return {
+      ok: false,
+      error: toUserError(res.status, `Invalid API response (${res.status})`),
+      status: res.status,
+    };
   }
 
   if (!res.ok || json.ok === false) {
     return {
       ok: false,
-      error: json.error || `Request failed (${res.status})`,
+      error: toUserError(
+        res.status,
+        json.error || `Request failed (${res.status})`,
+        json.details,
+      ),
       details: json.details,
       status: res.status,
     };

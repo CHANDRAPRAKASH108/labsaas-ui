@@ -34,19 +34,41 @@ export default async function PatientsPage({
       <div className="grid gap-4 lg:grid-cols-[340px_1fr]">
         <Card title="Add patient">
           <p className="mb-3 text-sm text-emerald-900/70">
-            Only name, phone, and address are required. Open a patient to edit more details and
-            view order history.
+            Name, phone, address, age, and sex are required. Open a patient to edit more details
+            and view order history.
           </p>
           <form action={createPatientAction} className="space-y-3">
             <Field label="Name" name="name" required autoComplete="name" />
             <Field label="Phone" name="phone" type="tel" required autoComplete="tel" />
             <Field label="Address" name="address" required autoComplete="street-address" />
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Age" name="age" type="number" required />
+              <div className="text-sm">
+                <label htmlFor="gender" className="mb-1.5 block font-medium text-emerald-950/80">
+                  Sex <span className="text-rose-700" aria-hidden="true">*</span>
+                </label>
+                <select
+                  id="gender"
+                  name="gender"
+                  required
+                  defaultValue=""
+                  className="min-h-11 w-full rounded-lg border border-emerald-800/20 bg-[#f7fcf9] px-3 py-2 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/25"
+                >
+                  <option value="" disabled>
+                    Select
+                  </option>
+                  <option value="Female">Female</option>
+                  <option value="Male">Male</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
             <PrimaryButton>Save patient</PrimaryButton>
           </form>
         </Card>
         <Card title={`Directory (${patients.length})`}>
           {!result.ok ? (
-            <EmptyState>Could not load patients: {result.error}</EmptyState>
+            <EmptyState>{result.error}</EmptyState>
           ) : null}
           <ListSearch
             action="/app/patients"
@@ -68,6 +90,7 @@ export default async function PatientsPage({
                   <tr>
                     <th scope="col">Name</th>
                     <th scope="col">Phone</th>
+                    <th scope="col">Age / Sex</th>
                     <th scope="col">Address</th>
                     <th scope="col">
                       <span className="sr-only">Open</span>
@@ -81,6 +104,10 @@ export default async function PatientsPage({
                         <TextLink href={`/app/patients/${p.id}`}>{p.name}</TextLink>
                       </td>
                       <td>{p.phone || "—"}</td>
+                      <td className="whitespace-nowrap text-sm">
+                        {[p.age != null ? `${p.age}y` : null, p.gender].filter(Boolean).join(" · ") ||
+                          "—"}
+                      </td>
                       <td>{p.address || "—"}</td>
                       <td>
                         <TextLink href={`/app/patients/${p.id}`}>Open</TextLink>

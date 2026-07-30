@@ -15,6 +15,8 @@ type Patient = {
   name: string;
   phone: string | null;
   address: string | null;
+  age: number | null;
+  gender: string | null;
 };
 
 type OrderItem = {
@@ -161,6 +163,34 @@ export function OrderDetailEditor({
                 className="w-full rounded-lg border border-emerald-800/20 bg-white px-3 py-2"
               />
             </label>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block text-sm">
+                <span className="mb-1.5 block font-medium text-emerald-950/80">Age</span>
+                <input
+                  name="age"
+                  type="number"
+                  required
+                  defaultValue={patient.age ?? ""}
+                  className="w-full rounded-lg border border-emerald-800/20 bg-white px-3 py-2"
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="mb-1.5 block font-medium text-emerald-950/80">Sex</span>
+                <select
+                  name="gender"
+                  required
+                  defaultValue={patient.gender ?? ""}
+                  className="w-full rounded-lg border border-emerald-800/20 bg-white px-3 py-2"
+                >
+                  <option value="" disabled>
+                    Select
+                  </option>
+                  <option value="Female">Female</option>
+                  <option value="Male">Male</option>
+                  <option value="Other">Other</option>
+                </select>
+              </label>
+            </div>
             <SaveButton pending={pending} />
           </form>
         ) : (
@@ -169,6 +199,11 @@ export function OrderDetailEditor({
               <TextLink href={`/app/patients/${patient.id}`}>{patient.name}</TextLink>
             </p>
             <p className="text-sm text-emerald-900/70">{patient.phone || "—"}</p>
+            <p className="text-sm text-emerald-900/70">
+              {[patient.age != null ? `${patient.age}y` : null, patient.gender]
+                .filter(Boolean)
+                .join(" · ") || "—"}
+            </p>
             <p className="text-sm text-emerald-900/70">{patient.address || "—"}</p>
           </div>
         )}
