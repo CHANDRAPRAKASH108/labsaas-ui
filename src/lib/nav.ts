@@ -117,6 +117,30 @@ export function canAccessScreen(input: {
   return keys.includes(key);
 }
 
+/** Billing counter needs desk + payment access: orders, patients, and invoices. */
+export function canAccessBillingCounter(input: {
+  role: string;
+  impersonating?: boolean;
+  allowedScreens?: string[] | null;
+}) {
+  const isAdmin =
+    input.role === "CLIENT_ADMIN" ||
+    (input.role === "SUPER_ADMIN" && Boolean(input.impersonating));
+
+  if (isAdmin) return true;
+
+  const keys =
+    input.allowedScreens && input.allowedScreens.length > 0
+      ? input.allowedScreens
+      : DEFAULT_STAFF_SCREENS;
+
+  return (
+    keys.includes("orders") &&
+    keys.includes("patients") &&
+    keys.includes("invoices")
+  );
+}
+
 export const superNav = [
   { href: "/super", label: "Clients" },
   { href: "/super/messaging", label: "Support mail" },

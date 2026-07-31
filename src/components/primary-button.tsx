@@ -11,10 +11,12 @@ export function PrimaryButton({
   children,
   type = "submit",
   disabled,
+  className,
 }: {
   children: React.ReactNode;
   type?: "submit" | "button";
   disabled?: boolean;
+  className?: string;
 }) {
   const { pending } = useFormStatus();
   useReportFormPending(pending);
@@ -25,7 +27,12 @@ export function PrimaryButton({
       type={type}
       disabled={busy}
       aria-busy={pending || undefined}
-      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-800 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+      className={[
+        "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-800 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
       {pending ? <Spinner /> : null}
       <span>{pending ? "Working…" : children}</span>

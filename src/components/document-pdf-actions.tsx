@@ -36,7 +36,6 @@ export function DocumentPdfActions({
 
   const pdfHref =
     kind === "invoice" ? `/api/pdf/invoices/${id}` : `/api/pdf/reports/${id}`;
-  const signedHref = `${pdfHref}/url`;
   const label = kind === "invoice" ? "Invoice" : "Report";
 
   useEffect(() => {
@@ -50,23 +49,7 @@ export function DocumentPdfActions({
     setPreviewLoading(true);
     setGlobalPending(true);
     try {
-      // Prefer a short-lived R2 URL so the browser downloads from Cloudflare
-      // instead of pumping the whole file through web → API → R2.
-      const signedRes = await fetch(signedHref, { cache: "no-store" });
-      if (signedRes.ok) {
-        const data = (await signedRes.json()) as {
-          url?: string | null;
-          filename?: string;
-        };
-        if (data.url) {
-          setPdfUrl((prev) => {
-            if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
-            return data.url!;
-          });
-          return;
-        }
-      }
-
+      // Same-origin blob so iframe.print() is allowed (signed R2 URLs are cross-origin).
       const res = await fetch(pdfHref, { cache: "no-store" });
       if (!res.ok) {
         const text = await res.text();
@@ -111,10 +94,17 @@ export function DocumentPdfActions({
   }
 
   function printPreview() {
-    const frame = iframeRef.current;
-    if (!frame?.contentWindow) return;
-    frame.contentWindow.focus();
-    frame.contentWindow.print();
+    try {
+      const frame = iframeRef.current;
+      if (pdfUrl?.startsWith("blob:") && frame?.contentWindow) {
+        frame.contentWindow.focus();
+        frame.contentWindow.print();
+        return;
+      }
+    } catch {
+      // fall through
+    }
+    window.open(pdfHref, "_blank", "noopener,noreferrer");
   }
 
   function onEmailSubmit(formData: FormData) {

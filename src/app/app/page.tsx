@@ -3,6 +3,9 @@ import { requireClientContext } from "@/lib/session";
 import { Badge, Card, EmptyState, StatCard, TextLink } from "@/components/ui";
 import { formatMoney } from "@/lib/billing";
 import { reportStatusLabel, reportStatusTone } from "@/lib/report-status";
+import { CashCounterLaunch } from "@/components/cash-counter-launch";
+import { canAccessBillingCounter } from "@/lib/nav";
+import { getAllowedScreens } from "@/lib/user-access";
 
 type DashboardData = {
   showIncome: boolean;
@@ -23,7 +26,17 @@ type DashboardData = {
 };
 
 export default async function AppDashboardPage() {
-  await requireClientContext();
+  const { session } = await requireClientContext();
+  const impersonating = Boolean(session.impersonatingClientId);
+  const allowedScreens =
+    session.role === "STAFF" && !impersonating
+      ? await getAllowedScreens(session.id)
+      : null;
+  const showBillingCounter = canAccessBillingCounter({
+    role: session.role,
+    impersonating,
+    allowedScreens,
+  });
 
   const result = await apiFetch<DashboardData>("/api/v1/dashboard");
   if (!result.ok) {
@@ -38,30 +51,40 @@ export default async function AppDashboardPage() {
     <>
       <div
         className={[
-          "mb-6 grid gap-4 sm:grid-cols-2",
-          showIncome ? "lg:grid-cols-5" : "lg:grid-cols-4",
+          "mb-6 grid gap-4",
+          showBillingCounter
+            ? "lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)]"
+            : "",
         ].join(" ")}
       >
-        {showIncome ? (
+        {showBillingCounter ? <CashCounterLaunch /> : null}
+        <div
+          className={[
+            "grid gap-4 sm:grid-cols-2",
+            showIncome ? "lg:grid-cols-2 xl:grid-cols-3" : "lg:grid-cols-2",
+          ].join(" ")}
+        >
+          {showIncome ? (
+            <StatCard
+              label="Today's total income"
+              value={formatMoney(stats.todayIncome)}
+              hint={
+                <>
+                  Paid collections today ·{" "}
+                  <TextLink href="/app/income">Analytics</TextLink>
+                </>
+              }
+            />
+          ) : null}
+          <StatCard label="Patients" value={stats.patients} />
+          <StatCard label="Orders" value={stats.orders} />
           <StatCard
-            label="Today's total income"
-            value={formatMoney(stats.todayIncome)}
-            hint={
-              <>
-                Paid collections today ·{" "}
-                <TextLink href="/app/income">Analytics</TextLink>
-              </>
-            }
+            label="Reports in queue"
+            value={stats.queuedReports}
+            hint="Technician workbench"
           />
-        ) : null}
-        <StatCard label="Patients" value={stats.patients} />
-        <StatCard label="Orders" value={stats.orders} />
-        <StatCard
-          label="Reports in queue"
-          value={stats.queuedReports}
-          hint="Technician workbench"
-        />
-        <StatCard label="Unpaid invoices" value={stats.unpaidInvoices} />
+          <StatCard label="Unpaid invoices" value={stats.unpaidInvoices} />
+        </div>
       </div>
 
       <p className="mb-4 text-sm text-emerald-900/70">
@@ -72,7 +95,11 @@ export default async function AppDashboardPage() {
 
       <Card
         title="Recent orders"
-        action={<TextLink href="/app/orders/new">New order</TextLink>}
+        action={
+          showBillingCounter ? (
+            <TextLink href="/app/orders/new">Billing counter</TextLink>
+          ) : undefined
+        }
       >
         {recentOrders.length === 0 ? (
           <EmptyState>

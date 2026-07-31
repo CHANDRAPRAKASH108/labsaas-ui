@@ -89,7 +89,22 @@ export async function updatePatientAction(formData: FormData): Promise<void> {
 
 export async function createOrderAction(formData: FormData) {
   const ageRaw = String(formData.get("patientAge") || "").trim();
-  const result = await apiFetch<{ orderId: string }>("/api/v1/orders", {
+  const paymentMethodRaw = String(formData.get("paymentMethod") || "")
+    .trim()
+    .toUpperCase();
+  const paymentMethod =
+    paymentMethodRaw === "CASH" ||
+    paymentMethodRaw === "UPI" ||
+    paymentMethodRaw === "CARD" ||
+    paymentMethodRaw === "OTHER"
+      ? paymentMethodRaw
+      : undefined;
+
+  const result = await apiFetch<{
+    orderId: string;
+    invoiceId?: string | null;
+    invoiceNumber?: string | null;
+  }>("/api/v1/orders", {
     method: "POST",
     body: {
       patientMode: String(formData.get("patientMode") || "existing"),
@@ -99,18 +114,31 @@ export async function createOrderAction(formData: FormData) {
       patientAddress: String(formData.get("patientAddress") || "").trim() || undefined,
       patientAge: ageRaw ? Number(ageRaw) : undefined,
       patientGender: String(formData.get("patientGender") || "").trim() || undefined,
+      patientEmail: String(formData.get("patientEmail") || "").trim() || undefined,
       testIds: formData.getAll("testIds").map(String),
       notes: String(formData.get("notes") || "") || null,
+      paymentMethod: paymentMethod ?? null,
     },
   });
   if (!result.ok) return { error: result.error as string };
   revalidatePath("/app/orders");
   revalidatePath("/app/reports");
-  revalidatePath("/app/patients");
+  revalidatePath("/app/invoices");
+  // Avoid revalidating patients/counter here — it remounts the desk and wipes draft fields.
   const patientId = String(formData.get("patientId") || "");
   if (patientId) revalidatePath(`/app/patients/${patientId}`);
-  await setFlash("Order created. Report added to the queue.");
-  return { ok: true as const, orderId: result.data.orderId };
+  revalidatePath(`/app/orders/${result.data.orderId}`);
+  await setFlash(
+    paymentMethod
+      ? "Order completed. Invoice ready."
+      : "Unpaid order created. Report added to the queue.",
+  );
+  return {
+    ok: true as const,
+    orderId: result.data.orderId,
+    invoiceId: result.data.invoiceId ?? null,
+    invoiceNumber: result.data.invoiceNumber ?? null,
+  };
 }
 
 export async function startReportAction(reportId: string) {

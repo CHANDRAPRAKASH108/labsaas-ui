@@ -5,6 +5,7 @@
 
 export type SidebarIcon =
   | "dashboard"
+  | "billing"
   | "orders"
   | "reports"
   | "patients"
@@ -38,12 +39,16 @@ export type SidebarLeaf = {
   icon: SidebarIcon;
   /** Staff screen permission key (maps to User.allowedScreens). */
   screenKey?: string;
+  /** Staff must have every listed screen key (admins always pass). */
+  requireScreens?: string[];
   /** Hide unless this module feature is enabled (admins still see `soon` items). */
   feature?: ModuleFeature;
   /** live = wired; soon = placeholder / future. */
   status?: "live" | "soon";
   /** Admin-only (users, settings, analytics, …). */
   adminOnly?: boolean;
+  /** Open billing counter focus flow (fullscreen) instead of a plain link. */
+  launch?: "billing-counter";
 };
 
 export type SidebarGroup = {
@@ -53,9 +58,11 @@ export type SidebarGroup = {
   href?: string;
   icon?: SidebarIcon;
   screenKey?: string;
+  requireScreens?: string[];
   feature?: ModuleFeature;
   status?: "live" | "soon";
   adminOnly?: boolean;
+  launch?: "billing-counter";
   children?: SidebarLeaf[];
 };
 
@@ -81,6 +88,21 @@ export const LAB_SIDEBAR: SidebarSection[] = [
         href: "/app",
         icon: "dashboard",
         screenKey: "dashboard",
+        status: "live",
+      },
+    ],
+  },
+  {
+    id: "front-desk",
+    label: null,
+    items: [
+      {
+        id: "billing-counter",
+        label: "Billing counter",
+        href: "/app/orders/new",
+        icon: "billing",
+        requireScreens: ["orders", "patients", "invoices"],
+        launch: "billing-counter",
         status: "live",
       },
     ],
@@ -329,6 +351,20 @@ function featureEnabled(
   return false;
 }
 
+function hasRequiredScreens(
+  requireScreens: string[] | undefined,
+  ctx: {
+    isAdmin: boolean;
+    allowedScreens: Set<string> | null;
+  },
+) {
+  if (!requireScreens?.length) return true;
+  if (ctx.isAdmin) return true;
+  // Staff without a permission set: only defaults apply elsewhere — deny multi-screen items.
+  if (!ctx.allowedScreens) return false;
+  return requireScreens.every((key) => ctx.allowedScreens!.has(key));
+}
+
 function filterLeaf(
   leaf: SidebarLeaf,
   ctx: {
@@ -342,6 +378,7 @@ function filterLeaf(
     return null;
   }
   if (!ctx.isAdmin && leaf.status === "soon") return null;
+  if (!hasRequiredScreens(leaf.requireScreens, ctx)) return null;
   if (!ctx.isAdmin && leaf.screenKey && ctx.allowedScreens) {
     if (!ctx.allowedScreens.has(leaf.screenKey)) return null;
   }
@@ -360,6 +397,7 @@ function filterGroup(
   if (!featureEnabled(group.feature, ctx.modules, group.status, ctx.isAdmin)) {
     return null;
   }
+  if (!hasRequiredScreens(group.requireScreens, ctx)) return null;
 
   if (group.children?.length) {
     const children = group.children

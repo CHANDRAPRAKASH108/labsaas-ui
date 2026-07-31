@@ -3,6 +3,11 @@
 import { useEffect, useState, type ReactNode } from "react";
 import type { SessionUser } from "@/lib/auth";
 import { AppSidebar, readSidebarCollapsed } from "@/components/app-sidebar";
+import {
+  BillingSessionBadge,
+  BillingSessionProvider,
+  useBillingUnloadGuard,
+} from "@/components/billing-session-context";
 import { FullscreenToggle } from "@/components/fullscreen-toggle";
 import { ProfileMenu } from "@/components/profile-menu";
 import type { SidebarSection } from "@/lib/sidebar-nav";
@@ -11,7 +16,7 @@ function titleForPath(pathname: string) {
   if (pathname === "/app") return "Dashboard";
   if (/^\/app\/patients\/[^/]+$/.test(pathname)) return "Patient";
   if (pathname.startsWith("/app/patients")) return "Patients";
-  if (pathname === "/app/orders/new") return "New order";
+  if (pathname === "/app/orders/new") return "Billing counter";
   if (/^\/app\/orders\/[^/]+$/.test(pathname)) return "Order";
   if (pathname.startsWith("/app/orders")) return "Test Orders";
   if (/^\/app\/reports\/[^/]+$/.test(pathname)) return "Report workbench";
@@ -74,6 +79,56 @@ export function AppShell({
   const padLeft = collapsed ? "lg:pl-[4.25rem]" : "lg:pl-64";
 
   return (
+    <BillingSessionProvider>
+      <AppShellFrame
+        session={session}
+        pageTitle={pageTitle}
+        sections={sections}
+        clientName={clientName}
+        homeHref={homeHref}
+        impersonating={impersonating}
+        collapsed={collapsed}
+        mobileOpen={mobileOpen}
+        padLeft={padLeft}
+        onCollapsedChange={onCollapsedChange}
+        setMobileOpen={setMobileOpen}
+      >
+        {children}
+      </AppShellFrame>
+    </BillingSessionProvider>
+  );
+}
+
+function AppShellFrame({
+  session,
+  pageTitle,
+  sections,
+  clientName,
+  homeHref,
+  impersonating,
+  collapsed,
+  mobileOpen,
+  padLeft,
+  onCollapsedChange,
+  setMobileOpen,
+  children,
+}: {
+  session: SessionUser;
+  pageTitle: string;
+  sections: SidebarSection[];
+  clientName?: string | null;
+  homeHref: string;
+  impersonating: boolean;
+  collapsed: boolean;
+  mobileOpen: boolean;
+  padLeft: string;
+  onCollapsedChange: (value: boolean) => void;
+  setMobileOpen: (value: boolean) => void;
+  children: ReactNode;
+}) {
+  useBillingUnloadGuard();
+
+  return (
     <div className="min-h-screen text-[var(--foreground)]">
       <a href="#main-content" className="skip-link no-print">
         Skip to main content
@@ -112,9 +167,12 @@ export function AppShell({
                 <MenuIcon />
               </button>
               <div className="min-w-0">
-                <h1 className="truncate text-base font-semibold leading-tight text-emerald-950 sm:text-lg">
-                  {pageTitle}
-                </h1>
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                  <h1 className="truncate text-base font-semibold leading-tight text-emerald-950 sm:text-lg">
+                    {pageTitle}
+                  </h1>
+                  <BillingSessionBadge />
+                </div>
                 {clientName ? (
                   <p className="truncate text-xs leading-tight text-emerald-900/60 lg:hidden">
                     {clientName}

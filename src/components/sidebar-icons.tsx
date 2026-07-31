@@ -7,6 +7,9 @@ const paths: Record<SidebarIcon, ReactNode> = {
       <path d="M3 3h7v7H3V3Zm11 0h7v5h-7V3ZM3 13h7v8H3v-8Zm11 8v-11h7v11h-7Z" />
     </>
   ),
+  billing: (
+    <path d="M4 6h16v12H4V6Zm0 4h16M8 6V4m8 2V4M9 15h6" />
+  ),
   orders: (
     <path d="M8 2h8l4 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm0 0v6h6M8 13h8M8 17h5" />
   ),

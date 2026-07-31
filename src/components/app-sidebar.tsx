@@ -1,9 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Logo } from "@/components/logo";
+import {
+  BILLING_COUNTER_HREF,
+  openBillingCounter,
+} from "@/components/cash-counter-launch";
 import { SidebarNavIcon } from "@/components/sidebar-icons";
 import {
   collectHrefs,
@@ -108,7 +112,7 @@ export function AppSidebar({
 
       <aside
         className={[
-          "no-print fixed inset-y-0 left-0 z-50 flex flex-col border-r border-emerald-800/15 bg-[#e8f6ef] transition-[width,transform] duration-200 ease-out",
+          "no-print fixed inset-y-0 left-0 z-50 flex flex-col overflow-x-hidden border-r border-emerald-800/15 bg-[#e8f6ef] transition-[width,transform] duration-200 ease-out",
           widthClass,
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         ].join(" ")}
@@ -117,31 +121,33 @@ export function AppSidebar({
       >
         <div
           className={[
-            "flex h-14 shrink-0 items-center gap-2 border-b border-emerald-800/10 px-3",
-            collapsed ? "justify-center" : "justify-between",
+            "flex h-14 shrink-0 items-center border-b border-emerald-800/10",
+            collapsed ? "justify-center px-2" : "justify-between gap-2 px-3",
           ].join(" ")}
         >
-          {!collapsed ? (
-            <div className="min-w-0 flex-1">
-              <Logo href={homeHref} size="sm" />
-              {clientName ? (
-                <p className="mt-0.5 truncate pl-0.5 text-[11px] font-medium text-emerald-900/55">
-                  {clientName}
-                </p>
-              ) : null}
-            </div>
+          {collapsed ? (
+            <Logo href={homeHref} size="sm" showWordmark={false} />
           ) : (
-            <Logo href={homeHref} size="sm" />
+            <>
+              <div className="min-w-0 flex-1">
+                <Logo href={homeHref} size="sm" />
+                {clientName ? (
+                  <p className="mt-0.5 truncate pl-0.5 text-[11px] font-medium text-emerald-900/55">
+                    {clientName}
+                  </p>
+                ) : null}
+              </div>
+              <button
+                type="button"
+                onClick={() => onCollapsedChange(true)}
+                className="hidden size-8 shrink-0 items-center justify-center rounded-lg text-emerald-900/70 hover:bg-emerald-900/10 hover:text-emerald-950 lg:inline-flex"
+                aria-label="Collapse sidebar"
+                title="Collapse"
+              >
+                <CollapseIcon collapsed={false} />
+              </button>
+            </>
           )}
-          <button
-            type="button"
-            onClick={() => onCollapsedChange(!collapsed)}
-            className="hidden size-8 shrink-0 items-center justify-center rounded-lg text-emerald-900/70 hover:bg-emerald-900/10 hover:text-emerald-950 lg:inline-flex"
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            title={collapsed ? "Expand" : "Collapse"}
-          >
-            <CollapseIcon collapsed={collapsed} />
-          </button>
         </div>
 
         <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3">
@@ -206,6 +212,7 @@ function SidebarGroupItem({
           active={active}
           collapsed={collapsed}
           soon={group.status === "soon"}
+          launch={group.launch}
         />
       </li>
     );
@@ -215,6 +222,7 @@ function SidebarGroupItem({
 
   if (collapsed) {
     const target = group.href || group.children![0]!.href;
+    const launch = group.launch || group.children![0]?.launch;
     return (
       <li>
         <NavLink
@@ -224,6 +232,7 @@ function SidebarGroupItem({
           active={childActive}
           collapsed
           soon={group.status === "soon"}
+          launch={launch}
         />
       </li>
     );
@@ -263,6 +272,7 @@ function SidebarGroupItem({
                   collapsed={false}
                   nested
                   soon={child.status === "soon"}
+                  launch={child.launch}
                 />
               </li>
             );
@@ -281,6 +291,7 @@ function NavLink({
   collapsed,
   nested,
   soon,
+  launch,
 }: {
   href: string;
   label: string;
@@ -289,25 +300,24 @@ function NavLink({
   collapsed: boolean;
   nested?: boolean;
   soon?: boolean;
+  launch?: "billing-counter";
 }) {
-  return (
-    <Link
-      href={href}
-      title={collapsed ? label : undefined}
-      className={[
-        "group relative flex items-center gap-2.5 rounded-lg text-sm font-medium transition-colors",
-        nested ? "px-2.5 py-1.5" : "px-2.5 py-2",
-        collapsed ? "justify-center" : "",
-        active
-          ? "bg-emerald-800 text-white shadow-sm"
-          : "text-emerald-900/80 hover:bg-emerald-900/8 hover:text-emerald-950",
-      ].join(" ")}
-      aria-current={active ? "page" : undefined}
-    >
+  const router = useRouter();
+  const className = [
+    "group relative flex w-full items-center gap-2.5 rounded-lg text-sm font-medium transition-colors",
+    nested ? "px-2.5 py-1.5" : "px-2.5 py-2",
+    collapsed ? "justify-center" : "",
+    active
+      ? "bg-emerald-800 text-white shadow-sm"
+      : "text-emerald-900/80 hover:bg-emerald-900/8 hover:text-emerald-950",
+  ].join(" ");
+
+  const content = (
+    <>
       <SidebarNavIcon name={icon} className="size-5 shrink-0 opacity-90" />
       {!collapsed ? (
         <>
-          <span className="min-w-0 flex-1 truncate">{label}</span>
+          <span className="min-w-0 flex-1 truncate text-left">{label}</span>
           {soon ? <SoonBadge dim={active} /> : null}
         </>
       ) : null}
@@ -317,6 +327,33 @@ function NavLink({
           {soon ? " (soon)" : ""}
         </span>
       ) : null}
+    </>
+  );
+
+  if (launch === "billing-counter") {
+    return (
+      <button
+        type="button"
+        title={collapsed ? label : undefined}
+        className={className}
+        aria-current={active ? "page" : undefined}
+        onClick={() =>
+          void openBillingCounter((h) => router.push(h), BILLING_COUNTER_HREF)
+        }
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      title={collapsed ? label : undefined}
+      className={className}
+      aria-current={active ? "page" : undefined}
+    >
+      {content}
     </Link>
   );
 }
